@@ -1,45 +1,60 @@
 package com.hemebiotech.analytics;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class AnalyticsCounter {
-	private static int headacheCount = 0;
-	private static int rashCount = 0;
-	private static int pupilCount = 0;
+	private List<String> symptoms;
+	private String outputFileName = "result.out";
+	private HashMap<String, Integer> symptomsCountMap = new HashMap<String, Integer>();
 	
-	public static void main(String args[]) throws Exception {
-		// first get input
-		BufferedReader reader = new BufferedReader (new FileReader("symptoms.txt"));
-		String line = reader.readLine();
-
-		int i = 0;
-		int headCount = 0;
-		while (line != null) {
-			i++;
-			System.out.println("symptom from file: " + line);
-			if (line.equals("headache")) {
-				headacheCount++;
-				System.out.println("number of headaches: " + headacheCount);
-			}
-			else if (line.equals("rash")) {
-				rashCount++;
-			}
-			else if (line.contains("pupils")) {
-				pupilCount++;
-			}
-
-			line = reader.readLine();	// get another symptom
-		}
-        // Closes the reader
-        reader.close();
+	public AnalyticsCounter(List<String> symptoms) {
+		this.symptoms = symptoms;
 		
-		// next generate output
-		FileWriter writer = new FileWriter ("result.out");
-		writer.write("headache: " + headacheCount + "\n");
-		writer.write("rash: " + rashCount + "\n");
-		writer.write("dialated pupils: " + pupilCount + "\n");
-		writer.close();
+		this.transformToMap();
+	}
+
+	/**
+	 * 
+	 * @param filepath a full or partial path to file with symptom strings in it, one per line
+	 */
+	public void transformToMap() {
+		
+		for (String symptom : symptoms) {
+			if(symptomsCountMap.containsKey(symptom)) {
+				symptomsCountMap.put(symptom, symptomsCountMap.get(symptom) + 1);
+			} else {
+				symptomsCountMap.put(symptom, 1);
+			}
+        }
+	}
+	
+	/**
+	 * @throws IOException
+	 */
+	public void exportResults() {
+		try {
+
+			FileWriter writer = new FileWriter (outputFileName);
+			
+			Iterator<Map.Entry<String, Integer>> entrySet = symptomsCountMap.entrySet().iterator();
+	        
+	        while (entrySet.hasNext())
+	        {
+	            Map.Entry<String, Integer> entry = entrySet.next();
+
+				writer.write(entry.getKey() + " " + entry.getValue() + "\n");
+	            System.out.println("Key : "+ entry.getKey() +"   Value : "+entry.getValue());
+	        }
+
+			writer.close();
+			
+		} catch (Exception e) {
+		      System.out.println("Exception: "+ e.getMessage());
+		}
 	}
 }
